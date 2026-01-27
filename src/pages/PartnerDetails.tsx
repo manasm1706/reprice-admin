@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
-import { CheckCircle, XCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface PartnerDetails {
@@ -69,6 +69,7 @@ export default function PartnerDetails() {
   const [approveDialog, setApproveDialog] = useState(false);
   const [rejectDialog, setRejectDialog] = useState(false);
   const [clarifyDialog, setClarifyDialog] = useState(false);
+  const [removeDialog, setRemoveDialog] = useState(false);
 
   const [approvalNotes, setApprovalNotes] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
@@ -151,6 +152,28 @@ export default function PartnerDetails() {
     }
   };
 
+  const handleRemovePartner = async () => {
+    setActionLoading(true);
+    try {
+      await api.delete(`/admin/partners/${id}`);
+      toast.success("Partner removed");
+      setRemoveDialog(false);
+      navigate("/partners");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to remove partner";
+      if (!error?.response) {
+        toast.error(`Remove failed: backend unreachable (${message})`);
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -174,6 +197,27 @@ export default function PartnerDetails() {
 
   return (
     <div className="space-y-6">
+      <AlertDialog open={removeDialog} onOpenChange={setRemoveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this partner?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will deactivate the partner account (they will not be able to login).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemovePartner}
+              disabled={actionLoading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {actionLoading ? "Removing…" : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
@@ -183,6 +227,17 @@ export default function PartnerDetails() {
           <p className="text-gray-500 mt-1">
             Review and manage partner verification
           </p>
+        </div>
+
+        <div className="ml-auto">
+          <Button
+            variant="destructive"
+            onClick={() => setRemoveDialog(true)}
+            disabled={actionLoading}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Remove partner
+          </Button>
         </div>
       </div>
 
