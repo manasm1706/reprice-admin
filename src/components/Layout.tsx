@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   Store,
+  Smartphone,
   Clock,
   CreditCard,
   ShoppingCart,
@@ -52,6 +53,11 @@ export default function Layout() {
       label: "Orders",
       icon: ShoppingCart,
       path: "/orders",
+    },
+    {
+      label: "Phones",
+      icon: Smartphone,
+      path: "/phones",
     },
   ];
 
